@@ -1,0 +1,31 @@
+# Commands:
+    - B1CA0-180 : Barrier 1 close angle
+    - B1OA0-180 : Barrier 1 open angle
+    - B2CA0-180 : Barrier 2 close angle
+    - B2OA0-180 : Barrier 2 open angle
+    - B3CA0-180 : Barrier 3 close angle
+    - B3OA0-180 : Barrier 3 open angle
+    - B4CA0-180 : Barrier 4 close angle
+    - B4OA0-180 : Barrier 4 open angle
+    - WBC0-9999 : Wait before close (ms)
+    - DFED0-99 : Delay for each degree (ms)
+    - DBSC0-9999 : Delay before second close (ms)
+    - LBT0-9999 : LED blink time (ms)
+    - DT0-9999 : Debounce time (ms)
+    - LTD0-9999 : Leave train delay (ms)
+    - DCC0-1 : Use DCC
+    - MADA0-2044 : Manual mode DCC address
+    - OBDA0-2044 : Open barriers DCC address
+    - CBDA0-2044 : Close barrier DCC address
+    - CS0-99 : Closing sound
+    - TS1-99 : Test sound
+    - SV0-30 : Sound Volume
+    - SI0-999 : Sound Increment (ms)
+    - R : Run
+    - S : Stop
+    - IS : ILS State
+    - O : Open barriers
+    - C : Close barriers
+    - D : Toggle Debug
+    - INIT : Global Initialization
+    - DV : Display Variables

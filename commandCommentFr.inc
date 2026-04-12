@@ -1,0 +1,31 @@
+# Commandes :
+    - AFB10-180 : Angle fermeture barrière 1 (°)
+    - AOB10-180 : Angle ouverture barrière 1 (°)
+    - AFB20-180 : Angle fermeture barrière 2 (°)
+    - AOB20-180 : Angle ouverture barrière 2 (°)
+    - AFB30-180 : Angle fermeture barrière 3 (°)
+    - AOB30-180 : Angle ouverture barrière 3 (°)
+    - AFB40-180 : Angle fermeture barrière 4 (°)
+    - AOB40-180 : Angle ouverture barrière 4 (°)
+    - AAF0-9999 : Attente avant fermeture (ms)
+    - AACD0-99 : Attente après chaque degré (ms)
+    - AASF0-9999 : Attente avant seconde fermeture (ms)
+    - DCL0-9999 : Durée clignotement LED (ms)
+    - DAR0-9999 : Délai anti-rebond (ms)
+    - TST0-9999 : Temps sortie train (ms)
+    - DCC0-1 : Utiliser DCC
+    - ADMM0-2044 : Adresse DCC mode manuel
+    - ADOB0-2044 : Adresse DCC ouverture barrières
+    - ADFB0-2044 : Adresse DCC fermeture barrières
+    - SF0-99 : Son fermeture
+    - TS1-99 : Test son
+    - V0-30 : Volume son
+    - IS0-999 : Incrément son (ms)
+    - M : Marche
+    - A : Arrêt
+    - E : Etat ILS
+    - O : Ouverture barrières
+    - F : Fermeture barrières
+    - D : Bascule déverminage
+    - INIT : Initialisation globale
+    - AV : Afficher variables
