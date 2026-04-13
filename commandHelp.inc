@@ -10,6 +10,7 @@
     Serial.print(F(BARRIER4_OPEN_ANGLE_COMMAND)); Serial.print(F("0-180 : Angle ouverture barrière 4 (°) => ")); Serial.println(data.barrier4OpenAngle);
     Serial.print(F(WAIT_BEFORE_CLOSE_COMMAND)); Serial.print(F("0-9999 : Attente avant fermeture (ms) => ")); Serial.println(data.waitBeforeClose);
     Serial.print(F(DELAY_FOR_EACH_DEGREE_COMMAND)); Serial.print(F("0-99 : Attente après chaque degré (ms) => ")); Serial.println(data.delayForEachDegree);
+    Serial.print(F(INERTIA_DEGREES_COUNT_COMMAND)); Serial.print(F("0-25 : Nombre de degrés inertie => ")); Serial.println(data.inertiaDegreesCount);
     Serial.print(F(DELAY_BEFORE_SECOND_CLOSE_COMMAND)); Serial.print(F("0-9999 : Attente avant seconde fermeture (ms) => ")); Serial.println(data.delayBeforeSecondClose);
     Serial.print(F(LED_BLINK_TIME_COMMAND)); Serial.print(F("0-9999 : Durée clignotement LED (ms) => ")); Serial.println(data.ledBlinkTime);
     Serial.print(F(DEBOUNCE_TIME_COMMAND)); Serial.print(F("0-9999 : Délai anti-rebond (ms) => ")); Serial.println(data.debounceTime);
@@ -28,7 +29,7 @@
     #endif
     Serial.print(F(START_PROCESS_COMMAND)); Serial.print(F(" : Marche")); Serial.println();
     Serial.print(F(STOP_PROCESS_COMMAND)); Serial.print(F(" : Arrêt")); Serial.println();
-    Serial.print(F(DISPLAY_ILS_STATE_COMMAND)); Serial.print(F(" : Etat ILS")); Serial.println();
+    Serial.print(F(DISPLAY_ILS_STATE_COMMAND)); Serial.print(F(" : État ILS")); Serial.println();
     Serial.print(F(OPEN_BARRIERS_COMMAND)); Serial.print(F(" : Ouverture barrières")); Serial.println();
     Serial.print(F(CLOSE_BARRIERS_COMMAND)); Serial.print(F(" : Fermeture barrières")); Serial.println();
     Serial.print(F(TOGGLE_DEBUG_COMMAND)); Serial.print(F(" : Bascule déverminage")); Serial.println();
@@ -45,6 +46,7 @@
     Serial.print(F(BARRIER4_OPEN_ANGLE_COMMAND)); Serial.print(F("0-180 : Barrier 4 open angle => ")); Serial.println(data.barrier4OpenAngle);
     Serial.print(F(WAIT_BEFORE_CLOSE_COMMAND)); Serial.print(F("0-9999 : Wait before close (ms) => ")); Serial.println(data.waitBeforeClose);
     Serial.print(F(DELAY_FOR_EACH_DEGREE_COMMAND)); Serial.print(F("0-99 : Delay for each degree (ms) => ")); Serial.println(data.delayForEachDegree);
+    Serial.print(F(INERTIA_DEGREES_COUNT_COMMAND)); Serial.print(F("0-25 : Inertia degrees count => ")); Serial.println(data.inertiaDegreesCount);
     Serial.print(F(DELAY_BEFORE_SECOND_CLOSE_COMMAND)); Serial.print(F("0-9999 : Delay before second close (ms) => ")); Serial.println(data.delayBeforeSecondClose);
     Serial.print(F(LED_BLINK_TIME_COMMAND)); Serial.print(F("0-9999 : LED blink time (ms) => ")); Serial.println(data.ledBlinkTime);
     Serial.print(F(DEBOUNCE_TIME_COMMAND)); Serial.print(F("0-9999 : Debounce time (ms) => ")); Serial.println(data.debounceTime);

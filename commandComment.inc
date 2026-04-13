@@ -9,6 +9,7 @@
     - B4OA0-180 : Barrier 4 open angle
     - WBC0-9999 : Wait before close (ms)
     - DFED0-99 : Delay for each degree (ms)
+    - IDC0-25 : Inertia degrees count
     - DBSC0-9999 : Delay before second close (ms)
     - LBT0-9999 : LED blink time (ms)
     - DT0-9999 : Debounce time (ms)

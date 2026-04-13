@@ -45,11 +45,12 @@ Settings are saved in Arduino's EEPROM to be available after (re)start.
     - 1 optional DY-SV17F sound module:
         - to ring when train is detected
     - 1 optional DCC decoder:
-        - to remotely control level crossing and manual/automatic mode. Note that DCC only command is possible. In this case, you may supress detectors if train detection is done outside.
+        - to remotely control level crossing and manual/automatic mode. Note that DCC only command is possible. In this case, you may suppress detectors if train detection is done outside.
 
 # Setting parameters:
     - define open and close angles for the 2 barriers on car side/full side
     - define delay to add after a degree rotation (set servo speed)
+    - define inertia degrees count (0 if not used, accelerate/slow down rotation on first/last degrees)
     - define delay to wait after detecting train before closing barriers
     - if 2 barriers on each road side (else let the 4 angles to zero):
         - define open and close angles for the 2 barriers on opposite side
@@ -157,7 +158,8 @@ Les paramètres sont enregistrés dans l"EEPROM de l'Arduino pour être disponib
 
 # Définition des paramètres :
     - définir les angles d'ouverture et de fermeture des 2 barrières côté voiture de la route
-    - définir le délai à ajouter après chaque degré de rotation (pour ralentir la barrière)
+    - définir le délai à ajouter après chaque degré de rotation (pour ralentir la barrière)    
+	- définir le nombre de degrés impactés par l’intertie (accélère/ralentit la rotation sur les premiers/derniers de rotation, 0 si pas utilisé)
     - définir de délai à attendre après la détection du train avant de fermer les barrières
     - si on utilise 2 barrières de chaque côté de la route :
         - définir les angles d'ouverture et de fermeture des 2 barrières côté opposé de la route
@@ -209,7 +211,7 @@ Les paramètres sont enregistrés dans l"EEPROM de l'Arduino pour être disponib
     - IS0-999 : Incrément son (ms)
     - M : Marche
     - A : Arrêt
-    - E : Etat ILS
+    - E : État ILS
     - O : Ouverture barrières
     - F : Fermeture barrières
     - D : Bascule déverminage

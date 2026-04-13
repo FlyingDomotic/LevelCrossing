@@ -1,4 +1,4 @@
-#define CODE_VERSION "V26.4.12-1"
+#define CODE_VERSION "V26.4.13-1"
 
 #define VERSION_FRANCAISE                                           // Messages in French (comment to have English Message)
 #define ILS_CLOSED LOW                                              // State read when ILS is closed
@@ -56,6 +56,7 @@ Settings are saved in Arduino's EEPROM to be available after (re)start.
 # Setting parameters:
     - define open and close angles for the 2 barriers on car side/full side
     - define delay to add after a degree rotation (set servo speed)
+    - define inertia degrees count (0 if not used, accelerate/slow down rotation on first/last degrees)
     - define delay to wait after detecting train before closing barriers
     - if 2 barriers on each road side (else let the 4 angles to zero):
         - define open and close angles for the 2 barriers on opposite side
@@ -93,6 +94,7 @@ Settings are saved in Arduino's EEPROM to be available after (re)start.
     - B4OA0-180 : Barrier 4 open angle
     - WBC0-9999 : Wait before close (ms)
     - DFED0-99 : Delay for each degree (ms)
+    - IDC0-25 : Inertia degrees count
     - DBSC0-9999 : Delay before second close (ms)
     - LBT0-9999 : LED blink time (ms)
     - DT0-9999 : Debounce time (ms)
@@ -152,6 +154,7 @@ License: GNU GENERAL PUBLIC LICENSE - Version 3, 29 June 2007
     #define BARRIER4_OPEN_ANGLE_COMMAND "AOB4"
     #define WAIT_BEFORE_CLOSE_COMMAND "AAF"
     #define DELAY_FOR_EACH_DEGREE_COMMAND "AACD"
+    #define INERTIA_DEGREES_COUNT_COMMAND "NDI"
     #define DELAY_BEFORE_SECOND_CLOSE_COMMAND "AASF"
     #define LED_BLINK_TIME_COMMAND "DCL"
     #define DEBOUNCE_TIME_COMMAND "DAR"
@@ -187,6 +190,7 @@ License: GNU GENERAL PUBLIC LICENSE - Version 3, 29 June 2007
     #define BARRIER4_OPEN_ANGLE_COMMAND "B4OA"
     #define WAIT_BEFORE_CLOSE_COMMAND "WBC"
     #define DELAY_FOR_EACH_DEGREE_COMMAND "DFED"
+    #define INERTIA_DEGREES_COUNT_COMMAND "IDC"
     #define DELAY_BEFORE_SECOND_CLOSE_COMMAND "DBSC"
     #define LED_BLINK_TIME_COMMAND "LBT"
     #define DEBOUNCE_TIME_COMMAND "DT"
@@ -241,6 +245,7 @@ struct eepromData_s {
     uint8_t manualModeDccAddress;                                   // Manual mode  DCC address (0 = unused)
     uint8_t openBarriersDccAddress;                                 // Open barriers DCC address (0 = unused)
     uint8_t closeBarriersDccAddress;                                // Close barriers DCC address (0 = unused)
+    uint8_t inertiaDegreesCount;                                    // Accelerate/slow down rotation on first/last degree
     bool isModeAuto;                                                // Is auto mode active (else manual)?
     bool isActive;                                                  // When active flag is true, relays are triggered by ILS
     bool inDebug;                                                   // Print debug message when true
@@ -267,6 +272,7 @@ struct ilsData_s {                                                  // ILS data 
 #define SERVO_PINS {3, 6, 9, 10}                                    // Pins where servos are connected
 
 struct servoData_s {                                                // Data for one servo
+    unsigned long lastServoTime;                                    // Last time servo moved
     Servo servo;                                                    // Servo class
     uint8_t pinNumber;                                              // Map servos to Arduino PIN number
     uint8_t currentPosition;                                        // Current servo position
@@ -324,7 +330,6 @@ directionData_s directionData[DIRECTION_COUNT];                     // Direction
 
 // Servo
 servoData_s servoData[SERVO_COUNT];                                 // Servo data
-unsigned long lastServoTime = 0;                                    // Last time we updated servos
 unsigned long barrierGroup1Timer = 0;                               // Timer before closing barrier group 1
 unsigned long barrierGroup2Timer = 0;                               // Timer before closing barrier group 2
 
@@ -388,6 +393,7 @@ void startLed(void);                                                // Start LED
 void stopLed(void);                                                 // Stop LEDs blinking
 void startProcess(void);                                            // Start process
 void stopProcess(void);                                             // Stop process
+unsigned long getDelayForEachDegree(uint8_t index);                 // Compute time to wait between each degree
 void openBarriers(void);                                            // Open barriers
 void closeBarriers(void);                                           // Close barriers
 void closeBarriersGroup1(void);                                     // Open barriers group #1
@@ -516,6 +522,7 @@ void initSettings(void) {
     data.openBarriersDccAddress = 0;                                // Open barriers DCC address (0 = unused)
     data.closeBarriersDccAddress = 0;                               // Close barriers DCC address (0 = unused)
     data.delayForEachDegree = 0;                                    // Delay between each degree of servo rotation
+    data.inertiaDegreesCount = 0;                                   // Accelerate/slow down rotation on first/last degree
     data.closeSound = 1;                                            // Close sound index
     data.soundVolume = 15;                                          // Sound volume
     data.soundIncrementDuration = 0;                                // Sound increment
@@ -623,6 +630,7 @@ void printHelp(void) {
         Serial.print(F(BARRIER4_OPEN_ANGLE_COMMAND)); Serial.print(F("0-180 : Angle ouverture barrière 4 (°) => ")); Serial.println(data.barrier4OpenAngle);
         Serial.print(F(WAIT_BEFORE_CLOSE_COMMAND)); Serial.print(F("0-9999 : Attente avant fermeture (ms) => ")); Serial.println(data.waitBeforeClose);
         Serial.print(F(DELAY_FOR_EACH_DEGREE_COMMAND)); Serial.print(F("0-99 : Attente après chaque degré (ms) => ")); Serial.println(data.delayForEachDegree);
+        Serial.print(F(INERTIA_DEGREES_COUNT_COMMAND)); Serial.print(F("0-25 : Nombre de degrés inertie => ")); Serial.println(data.inertiaDegreesCount);
         Serial.print(F(DELAY_BEFORE_SECOND_CLOSE_COMMAND)); Serial.print(F("0-9999 : Attente avant seconde fermeture (ms) => ")); Serial.println(data.delayBeforeSecondClose);
         Serial.print(F(LED_BLINK_TIME_COMMAND)); Serial.print(F("0-9999 : Durée clignotement LED (ms) => ")); Serial.println(data.ledBlinkTime);
         Serial.print(F(DEBOUNCE_TIME_COMMAND)); Serial.print(F("0-9999 : Délai anti-rebond (ms) => ")); Serial.println(data.debounceTime);
@@ -641,7 +649,7 @@ void printHelp(void) {
         #endif
         Serial.print(F(START_PROCESS_COMMAND)); Serial.print(F(" : Marche")); Serial.println();
         Serial.print(F(STOP_PROCESS_COMMAND)); Serial.print(F(" : Arrêt")); Serial.println();
-        Serial.print(F(DISPLAY_ILS_STATE_COMMAND)); Serial.print(F(" : Etat ILS")); Serial.println();
+        Serial.print(F(DISPLAY_ILS_STATE_COMMAND)); Serial.print(F(" : État ILS")); Serial.println();
         Serial.print(F(OPEN_BARRIERS_COMMAND)); Serial.print(F(" : Ouverture barrières")); Serial.println();
         Serial.print(F(CLOSE_BARRIERS_COMMAND)); Serial.print(F(" : Fermeture barrières")); Serial.println();
         Serial.print(F(TOGGLE_DEBUG_COMMAND)); Serial.print(F(" : Bascule déverminage")); Serial.println();
@@ -658,6 +666,7 @@ void printHelp(void) {
         Serial.print(F(BARRIER4_OPEN_ANGLE_COMMAND)); Serial.print(F("0-180 : Barrier 4 open angle => ")); Serial.println(data.barrier4OpenAngle);
         Serial.print(F(WAIT_BEFORE_CLOSE_COMMAND)); Serial.print(F("0-9999 : Wait before close (ms) => ")); Serial.println(data.waitBeforeClose);
         Serial.print(F(DELAY_FOR_EACH_DEGREE_COMMAND)); Serial.print(F("0-99 : Delay for each degree (ms) => ")); Serial.println(data.delayForEachDegree);
+        Serial.print(F(INERTIA_DEGREES_COUNT_COMMAND)); Serial.print(F("0-25 : Inertia degrees count => ")); Serial.println(data.inertiaDegreesCount);
         Serial.print(F(DELAY_BEFORE_SECOND_CLOSE_COMMAND)); Serial.print(F("0-9999 : Delay before second close (ms) => ")); Serial.println(data.delayBeforeSecondClose);
         Serial.print(F(LED_BLINK_TIME_COMMAND)); Serial.print(F("0-9999 : LED blink time (ms) => ")); Serial.println(data.ledBlinkTime);
         Serial.print(F(DEBOUNCE_TIME_COMMAND)); Serial.print(F("0-9999 : Debounce time (ms) => ")); Serial.println(data.debounceTime);
@@ -810,6 +819,9 @@ void executeCommand(void) {
         saveSettings();
     } else if (isCommandValue(inputBuffer, (char*) DELAY_FOR_EACH_DEGREE_COMMAND, 0, 99)) {
         data.delayForEachDegree = commandValue;
+        saveSettings();
+    } else if (isCommandValue(inputBuffer, (char*) INERTIA_DEGREES_COUNT_COMMAND, 0, 25)) {
+        data.inertiaDegreesCount = commandValue;
         saveSettings();
     } else if (isCommandValue(inputBuffer, (char*) DELAY_BEFORE_SECOND_CLOSE_COMMAND, 0, 9999)) {
         data.delayBeforeSecondClose = commandValue;
@@ -1078,7 +1090,7 @@ void startLed(void){
     // For all LEDS
     for (uint8_t i=0; i<LED_COUNT; i++){
         ledData[i].isActive = (i & 1);                              // Set LED initial state depending on odd/even index
-        digitalWrite(ledData[i].pinNumber, ledData[i].isActive? LED_ON : LED_OFF);  // Set LED accordingly
+        digitalWrite(ledData[i].pinNumber, ledData[i].isActive? LED_ON : LED_OFF); // Set LED accordingly
         }
     ledLastBlinkTime = millis();                                    // Save last blink time
 }
@@ -1088,7 +1100,7 @@ void stopLed(void){
     // For all LEDS
     for (uint8_t i=0; i<LED_COUNT; i++){
         ledData[i].isActive = false;                                // Set LED off
-        digitalWrite(ledData[i].pinNumber, ledData[i].isActive? LED_ON : LED_OFF);  // Set LED accordingly
+        digitalWrite(ledData[i].pinNumber, ledData[i].isActive? LED_ON : LED_OFF); // Set LED accordingly
     }
     ledLastBlinkTime = 0;                                           // Deactivate LEDS
 }
@@ -1101,26 +1113,43 @@ void servoSetup(void){
         servoData[i].targetPosition = servoData[i].servoOpenAngle;  // Open barrier
         servoData[i].currentPosition = servoData[i].servoOpenAngle; // Current barrier position
         servoData[i].servo.write(servoData[i].targetPosition);      // Move immediatly to open
+        servoData[i].lastServoTime = 0;                             // Last time servo moved
+    }
+}
 
+// Compute time to wait between each degree giving inertiaDegreesCount and current/target position
+unsigned long getDelayForEachDegree(uint8_t index) {
+    uint8_t deltaDegrees = abs(servoData[index].currentPosition     // How far from target?
+                             - servoData[index].targetPosition);
+    if (deltaDegrees) {                                             // We still have to move
+        if (deltaDegrees <= data.inertiaDegreesCount) {             // We're in interia zone
+            return data.delayForEachDegree *                        // Multiply wait time
+                ((data.inertiaDegreesCount + 2) - deltaDegrees);    // ... more and more as close to zero
+        } else {                                                    // Outside inertia zone
+            return data.delayForEachDegree;                         // Return standard delay
+        }
+
+    } else {                                                        // We're at target
+        return UINT32_MAX;                                          // Set unsigned long max (~ 65 days)
     }
 }
 
 // Servos loop
 void servoLoop(void){
-    // Does delay since last servo update expire?
-    if ((millis() - lastServoTime) > data.delayForEachDegree) {
-        // For all servos, turn by +/- one degree to reach target position
-        int8_t increment = 1;                                       // By default, turn right
-        for (uint8_t i=0; i<SERVO_COUNT; i++) {
-            if (servoData[i].currentPosition != servoData[i].targetPosition) {// Only if servo not at target position
+    // For all servos, turn by +/- one degree to reach target position
+    for (uint8_t i=0; i<SERVO_COUNT; i++) {
+        // Does delay since last servo update expire?
+        if ((millis() - servoData[i].lastServoTime) > getDelayForEachDegree(i)) {
+            int8_t increment = 1;                                   // By default, turn right
+            if (servoData[i].currentPosition != servoData[i].targetPosition) { // Only if servo not at target position
                 if (servoData[i].currentPosition > servoData[i].targetPosition) { // Servo should turn left
                     increment = -1;
                 }
                 servoData[i].currentPosition += increment;          // Update current position
-                servoData[i].servo.write(servoData[i].targetPosition);           // Turn servo
+                servoData[i].servo.write(servoData[i].targetPosition); // Turn servo
             }
+            servoData[i].lastServoTime = millis();                  // Update last servo change time
         }
-        lastServoTime = millis();                                   // Update last servo change time
     }
 
     // Check timers
@@ -1140,15 +1169,15 @@ void servoLoop(void){
         if (data.manualModeDccAddress && data.manualModeDccAddress == addr) {
             traceDccTurnout(addr, direction, outputPower);
             data.manualModeDccAddress = (direction != 0);
-        } 
+        }
         if (data.openBarriersDccAddress && data.openBarriersDccAddress == addr && direction == 1) {
             traceDccTurnout(addr, direction, outputPower);
             openBarriers();
-        } 
+        }
         if (data.closeBarriersDccAddress && data.closeBarriersDccAddress == addr && direction == 1) {
             traceDccTurnout(addr, direction, outputPower);
-            closeBarriers();           
-        } 
+            closeBarriers();
+        }
     }
 
     // Trace DCC message
@@ -1185,7 +1214,7 @@ void servoLoop(void){
     void dccLoop(void) {
         if (dccActive) {
             dccInterface.process();                                 // Run DCC loop
-    
+
         }
     }
 #endif

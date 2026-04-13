@@ -9,6 +9,7 @@
     - AOB40-180 : Angle ouverture barrière 4 (°)
     - AAF0-9999 : Attente avant fermeture (ms)
     - AACD0-99 : Attente après chaque degré (ms)
+    - NDI0-25 : Nombre de degrés inertie
     - AASF0-9999 : Attente avant seconde fermeture (ms)
     - DCL0-9999 : Durée clignotement LED (ms)
     - DAR0-9999 : Délai anti-rebond (ms)
@@ -23,7 +24,7 @@
     - IS0-999 : Incrément son (ms)
     - M : Marche
     - A : Arrêt
-    - E : Etat ILS
+    - E : État ILS
     - O : Ouverture barrières
     - F : Fermeture barrières
     - D : Bascule déverminage

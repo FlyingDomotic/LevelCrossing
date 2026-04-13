@@ -36,6 +36,9 @@ if (isCommandValue(inputBuffer, (char*) BARRIER1_CLOSE_ANGLE_COMMAND, 0, 180)) {
 } else if (isCommandValue(inputBuffer, (char*) DELAY_FOR_EACH_DEGREE_COMMAND, 0, 99)) {
     data.delayForEachDegree = commandValue;
     saveSettings();
+} else if (isCommandValue(inputBuffer, (char*) INERTIA_DEGREES_COUNT_COMMAND, 0, 25)) {
+    data.inertiaDegreesCount = commandValue;
+    saveSettings();
 } else if (isCommandValue(inputBuffer, (char*) DELAY_BEFORE_SECOND_CLOSE_COMMAND, 0, 9999)) {
     data.delayBeforeSecondClose = commandValue;
     saveSettings();
@@ -52,7 +55,7 @@ if (isCommandValue(inputBuffer, (char*) BARRIER1_CLOSE_ANGLE_COMMAND, 0, 180)) {
     } else if (isCommandValue(inputBuffer, (char*) USE_DCC_COMMAND, 0, 1)) {
         data.useDCC = commandValue;
         saveSettings();
-        dccChanged();
+        dccSetup();
     } else if (isCommandValue(inputBuffer, (char*) MANUAL_MODE_DCC_ADDRESS_COMMAND, 0, 2044)) {
         data.manualModeDccAddress = commandValue;
         saveSettings();
